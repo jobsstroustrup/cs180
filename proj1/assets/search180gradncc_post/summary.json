@@ -1,0 +1,478 @@
+[
+  {
+    "name": "cathedral",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/cathedral.jpg",
+    "output": "search180gradncc_post/cathedral_color.jpg",
+    "G_offset": [
+      5,
+      2
+    ],
+    "R_offset": [
+      12,
+      3
+    ],
+    "crop_removed": {
+      "top": 49,
+      "bottom": 24,
+      "left": 26,
+      "right": 28
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "church",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/church.tif",
+    "output": "search180gradncc_post/church_color.jpg",
+    "G_offset": [
+      25,
+      4
+    ],
+    "R_offset": [
+      58,
+      -4
+    ],
+    "crop_removed": {
+      "top": 258,
+      "bottom": 281,
+      "left": 294,
+      "right": 303
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "emir",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/emir.tif",
+    "output": "search180gradncc_post/emir_color.jpg",
+    "G_offset": [
+      49,
+      24
+    ],
+    "R_offset": [
+      107,
+      40
+    ],
+    "crop_removed": {
+      "top": 259,
+      "bottom": 296,
+      "left": 310,
+      "right": 280
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "harvesters",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/harvesters.tif",
+    "output": "search180gradncc_post/harvesters_color.jpg",
+    "G_offset": [
+      60,
+      18
+    ],
+    "R_offset": [
+      124,
+      14
+    ],
+    "crop_removed": {
+      "top": 495,
+      "bottom": 285,
+      "left": 349,
+      "right": 284
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "icon",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/icon.tif",
+    "output": "search180gradncc_post/icon_color.jpg",
+    "G_offset": [
+      42,
+      17
+    ],
+    "R_offset": [
+      90,
+      23
+    ],
+    "crop_removed": {
+      "top": 295,
+      "bottom": 491,
+      "left": 401,
+      "right": 309
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "italil",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/italil.tif",
+    "output": "search180gradncc_post/italil_color.jpg",
+    "G_offset": [
+      38,
+      22
+    ],
+    "R_offset": [
+      77,
+      36
+    ],
+    "crop_removed": {
+      "top": 263,
+      "bottom": 266,
+      "left": 298,
+      "right": 372
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "lastochikino",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/lastochikino.tif",
+    "output": "search180gradncc_post/lastochikino_color.jpg",
+    "G_offset": [
+      -3,
+      -2
+    ],
+    "R_offset": [
+      76,
+      -8
+    ],
+    "crop_removed": {
+      "top": 320,
+      "bottom": 258,
+      "left": 353,
+      "right": 284
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "lugano",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/lugano.tif",
+    "output": "search180gradncc_post/lugano_color.jpg",
+    "G_offset": [
+      41,
+      -17
+    ],
+    "R_offset": [
+      92,
+      -29
+    ],
+    "crop_removed": {
+      "top": 375,
+      "bottom": 298,
+      "left": 278,
+      "right": 267
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "melons",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/melons.tif",
+    "output": "search180gradncc_post/melons_color.jpg",
+    "G_offset": [
+      80,
+      10
+    ],
+    "R_offset": [
+      177,
+      13
+    ],
+    "crop_removed": {
+      "top": 266,
+      "bottom": 291,
+      "left": 266,
+      "right": 324
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "monastery",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/monastery.jpg",
+    "output": "search180gradncc_post/monastery_color.jpg",
+    "G_offset": [
+      -3,
+      2
+    ],
+    "R_offset": [
+      3,
+      2
+    ],
+    "crop_removed": {
+      "top": 44,
+      "bottom": 20,
+      "left": 27,
+      "right": 29
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "self_portrait",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/self_portrait.tif",
+    "output": "search180gradncc_post/self_portrait_color.jpg",
+    "G_offset": [
+      78,
+      29
+    ],
+    "R_offset": [
+      175,
+      37
+    ],
+    "crop_removed": {
+      "top": 446,
+      "bottom": 327,
+      "left": 399,
+      "right": 276
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "siren",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/siren.tif",
+    "output": "search180gradncc_post/siren_color.jpg",
+    "G_offset": [
+      49,
+      -6
+    ],
+    "R_offset": [
+      96,
+      -24
+    ],
+    "crop_removed": {
+      "top": 340,
+      "bottom": 317,
+      "left": 330,
+      "right": 427
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "three_generations",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/three_generations.tif",
+    "output": "search180gradncc_post/three_generations_color.jpg",
+    "G_offset": [
+      53,
+      12
+    ],
+    "R_offset": [
+      111,
+      9
+    ],
+    "crop_removed": {
+      "top": 242,
+      "bottom": 227,
+      "left": 265,
+      "right": 294
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  },
+  {
+    "name": "tobolsk",
+    "input": "/home/zhenyuhe/Downloads/cs180_proj1_data/tobolsk.jpg",
+    "output": "search180gradncc_post/tobolsk_color.jpg",
+    "G_offset": [
+      3,
+      3
+    ],
+    "R_offset": [
+      6,
+      3
+    ],
+    "crop_removed": {
+      "top": 128,
+      "bottom": 22,
+      "left": 31,
+      "right": 28
+    },
+    "feature": "grad",
+    "score": "ncc",
+    "use_pyramid": true,
+    "search_radius": 180,
+    "min_size": 256,
+    "refine_radius": 4,
+    "scale_factor": 0.5,
+    "margin_frac": 0.15,
+    "keep_top": 0.25,
+    "wb": "grayworld",
+    "do_color_map": false,
+    "p_low": 1.0,
+    "p_high": 99.0,
+    "crop_frac": 0.05,
+    "crop_guard": 0.03
+  }
+]

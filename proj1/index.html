@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 · Project 1 — Images of the Russian Empire</title>
+  <!-- Reuse your main site's look & feel -->
+  <link rel="stylesheet" href="https://jobsstroustrup.github.io/libs/awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/materialize-css@1.0.0/dist/css/materialize.min.css">
+  <link rel="stylesheet" href="https://jobsstroustrup.github.io/css/matery.css">
+  <link rel="stylesheet" href="https://jobsstroustrup.github.io/css/my.css">
+  <style>
+  
+    .hero{background:linear-gradient(135deg,#263238 0%,#1b1f23 100%);color:#fff;padding:4rem 0 2rem;text-align:center;margin-bottom:1rem;}
+    .img-shadow{box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:6px;}
+    figure{margin:1.5rem 0;} figcaption{text-align:center;color:#757575;margin-top:.4rem;}
+    .two-col .col{margin-bottom:1rem;}
+    .callout{background:#f5f5f5;border-left:4px solid #26a69a;padding:1rem 1.2rem;border-radius:4px;}
+    .footer{margin:4rem 0 2rem;text-align:center;color:#9e9e9e;font-size:.9rem;}
+    .gallery img{width:100%;height:auto;margin-bottom:12px;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.12);}
+
+    /* Screen size for the large media (keeps your current look) */
+    .img-half { width:50% !important; height:auto !important; display:block; margin:0 auto; }
+
+    /* Prevent bad breaks on both screen & print */
+    figure, img, .gallery { break-inside: avoid; page-break-inside: avoid; }
+
+    /* ---------- PRINT-ONLY TWEAKS ---------- */
+    @media print {
+      html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .row { margin-bottom: 0.8rem !important; }
+
+      /* Keep the two images per part on the SAME ROW when printing */
+      .two-col.row { display:flex !important; flex-wrap:nowrap !important; align-items:flex-start; gap:16px; }
+      .two-col .col { float:none !important; width:50% !important; padding:0 8px !important; margin:0 !important; }
+
+      /* Make the Part 1 & Part 2 photos smaller on paper:
+         - each image is 75% of its 50%-width column => ~37.5% of page width. */
+      .two-col .img-half { width:75% !important; margin:0 auto !important; }
+
+      /* Make the main GIF smaller on paper (~35% of page width) */
+      .gif-compact { width:35% !important; margin:0 auto !important; }
+
+      /* Keep the 5 stills on ONE ROW when printing */
+      .gallery.row { display:flex !important; flex-wrap:nowrap !important; justify-content:space-between; gap:8px; }
+      .gallery .col { flex:0 0 18% !important; max-width:18% !important; padding:0 !important; margin:0 !important; }
+      .gallery img { width:100% !important; height:auto !important; }
+
+      /* Avoid awkward splits */
+      figure, section { break-inside: avoid; page-break-inside: avoid; }
+    }
+  
+  /* extra tweaks */
+  table.striped { width:100%; border-collapse:collapse; }
+  table.striped th, table.striped td { padding:6px 10px; border-bottom:1px solid #e0e0e0; }
+  .gallery figure { margin:1rem 0; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>Project 1 — Images of the Russian Empire</h1>
+    <p class="flow-text">Prokudin‑Gorskii colorization (CS280A)</p>
+    <div class="chips center">
+      <div class="chip"><a href="../"><i class="fa fa-arrow-left"></i>&nbsp;Back to CS180</a></div>
+      <div class="chip"><a href="https://jobsstroustrup.github.io/"><i class="fa fa-home"></i>&nbsp;Main site</a></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="project-card">
+      <h2>Overview &amp; Approach</h2>
+      
+<p>This page documents <strong>Project 1 — Images of the Russian Empire</strong> (CS280A track).
+We reconstruct color photographs from Prokudin‑Gorskii’s three‑panel glass plates by
+splitting the scan into B, G, R channels, <em>aligning</em> G and R onto B, and stacking them as RGB.
+I built both a single‑scale exhaustive aligner and a coarse‑to‑fine pyramid with configurable
+<em>feature</em> and <em>score</em> combinations. I also implemented automatic cropping, white balance,
+contrast stretching, and a gentle 3×3 color mixing (BGR→RGB‑ish).</p>
+
+      
+<h3>Alignment (physics & math)</h3>
+<p>The three panels are monochrome exposures taken through blue, green, and red filters.
+Since each exposure is of the <em>same scene</em> with the camera fixed, the panels differ primarily by a 2‑D <strong>translation</strong>.
+We estimate translation by testing candidate shifts (dy, dx) and evaluating a similarity score on the interior overlap only (no wrap‑around).
+Two feature spaces are supported: raw intensity and gradient magnitude
+\(\|\nabla I\| = \sqrt{((I(x+1)-I(x-1))/2)^2 + ((I(y+1)-I(y-1))/2)^2}\).</p>
+<ul>
+  <li><b>NCC (ZNCC):</b> maximize zero‑mean normalized cross‑correlation; robust to brightness scaling/offsets.</li>
+  <li><b>SSD:</b> minimize sum of squared differences; sensitive to brightness changes unless used on gradients.</li>
+  <li><b>Weighted NCC on gradients:</b> same as NCC but only the strongest <em>mutual</em> edges (top <code>keep_top</code> fraction) influence the score, via weights \(w=a\cdot b\).</li>
+</ul>
+<p>Search is either exhaustive in a fixed window (for small images) or a <em>pyramid</em>:
+downsample by 0.5 to a small size, search there, upscale the displacement, and refine within ±r at each finer level.</p>
+
+      
+<h3>Why gradients beat raw intensity for alignment</h3>
+<p>Different filters and emulsions mean the three panels have different <em>photometric</em> responses (tone curves, exposure).
+Matching <strong>raw</strong> intensities assumes identical photometry and fails near spectral edges (e.g., red clothing).
+Gradients, however, respond to <em>boundaries</em> (object edges) and are far more invariant to monotonic tone changes.
+Mathematically, under an affine intensity transformation \(I' \approx \alpha I + \beta\), gradient <em>directions</em> are preserved and
+NCC on zero‑meaned gradients largely cancels \(\alpha,\beta\).</p>
+
+      
+<h3>Bells &amp; Whistles (CS280A)</h3>
+<ul>
+  <li><b>Auto‑crop:</b> sum edge energy per row/column; trim outside until at most <code>crop_frac</code> of energy is removed; a small <code>crop_guard</code> pre‑trims scan borders.</li>
+  <li><b>White balance:</b> Gray‑World (equalize channel means) or Shades‑of‑Gray (Minkowski p‑norm, p≈6) to bias toward highlights.</li>
+  <li><b>Contrast:</b> per‑channel percentile stretch (1–99%) to fill [0,1] while ignoring outliers.</li>
+  <li><b>Color mixing:</b> a mild 3×3 linear transform from [B,G,R] to RGB‑ish primaries; helps reduce historical filter casts.</li>
+</ul>
+
+      <div class="callout">
+        <b>Params (main runs)</b>: search=180, feature=grad, score=ncc, pyramid=ON, margin_frac=0.15,
+        post: none (Sections 1–2) vs. WB=grayworld + contrast 1–99% + color‑mix + auto‑crop (Section 3).
+      </div>
+    </section>
+
+    
+<section class="project-card">
+  <h2>Main results — Grad + NCC (no post‑processing)</h2>
+  <p>These images use gradient features with ZNCC alignment, no cropping/WB/contrast/mixing. The offsets below are (dy, dx) for aligning G→B and R→B.</p>
+  <table class='striped'>
+<tr><th>Image</th><th>G offset (dy,dx)</th><th>R offset (dy,dx)</th><th>Cropped (t,b,l,r)</th></tr>
+<tr><td>cathedral</td><td>(5, 2)</td><td>(12, 3)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>church</td><td>(25, 4)</td><td>(58, -4)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>emir</td><td>(49, 24)</td><td>(107, 40)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>harvesters</td><td>(60, 18)</td><td>(124, 14)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>icon</td><td>(42, 17)</td><td>(90, 23)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>italil</td><td>(38, 22)</td><td>(77, 36)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>lastochikino</td><td>(-3, -2)</td><td>(76, -8)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>lugano</td><td>(41, -17)</td><td>(92, -29)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>melons</td><td>(80, 10)</td><td>(177, 13)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>monastery</td><td>(-3, 2)</td><td>(3, 2)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>self_portrait</td><td>(78, 29)</td><td>(175, 37)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>siren</td><td>(49, -6)</td><td>(96, -24)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>three_generations</td><td>(53, 12)</td><td>(111, 9)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>tobolsk</td><td>(3, 3)</td><td>(6, 3)</td><td>(0, 0, 0, 0)</td></tr>
+</table>
+  <div class='gallery'>
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/cathedral_color.jpg" alt="cathedral color result">
+            <figcaption>cathedral&nbsp;—&nbsp;G (5, 2), R (12, 3)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/church_color.jpg" alt="church color result">
+            <figcaption>church&nbsp;—&nbsp;G (25, 4), R (58, -4)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/emir_color.jpg" alt="emir color result">
+            <figcaption>emir&nbsp;—&nbsp;G (49, 24), R (107, 40)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/harvesters_color.jpg" alt="harvesters color result">
+            <figcaption>harvesters&nbsp;—&nbsp;G (60, 18), R (124, 14)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/icon_color.jpg" alt="icon color result">
+            <figcaption>icon&nbsp;—&nbsp;G (42, 17), R (90, 23)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/italil_color.jpg" alt="italil color result">
+            <figcaption>italil&nbsp;—&nbsp;G (38, 22), R (77, 36)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/lastochikino_color.jpg" alt="lastochikino color result">
+            <figcaption>lastochikino&nbsp;—&nbsp;G (-3, -2), R (76, -8)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/lugano_color.jpg" alt="lugano color result">
+            <figcaption>lugano&nbsp;—&nbsp;G (41, -17), R (92, -29)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/melons_color.jpg" alt="melons color result">
+            <figcaption>melons&nbsp;—&nbsp;G (80, 10), R (177, 13)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/monastery_color.jpg" alt="monastery color result">
+            <figcaption>monastery&nbsp;—&nbsp;G (-3, 2), R (3, 2)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/self_portrait_color.jpg" alt="self_portrait color result">
+            <figcaption>self_portrait&nbsp;—&nbsp;G (78, 29), R (175, 37)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/siren_color.jpg" alt="siren color result">
+            <figcaption>siren&nbsp;—&nbsp;G (49, -6), R (96, -24)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/three_generations_color.jpg" alt="three_generations color result">
+            <figcaption>three_generations&nbsp;—&nbsp;G (53, 12), R (111, 9)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_nopost/tobolsk_color.jpg" alt="tobolsk color result">
+            <figcaption>tobolsk&nbsp;—&nbsp;G (3, 3), R (6, 3)</figcaption>
+          </figure>
+        
+</div>
+</section>
+
+    
+<section class="project-card">
+  <h2>Comparison — Intensity + NCC (no post‑processing)</h2>
+  <p>Raw intensities are more sensitive to exposure differences across channels. You can see small misalignments on textured regions and stronger seams near borders, confirming that aligning <em>boundaries</em> (gradients) is the better physical choice.</p>
+  <table class='striped'>
+<tr><th>Image</th><th>G offset (dy,dx)</th><th>R offset (dy,dx)</th><th>Cropped (t,b,l,r)</th></tr>
+<tr><td>cathedral</td><td>(5, 2)</td><td>(12, 3)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>church</td><td>(25, 4)</td><td>(58, -4)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>emir</td><td>(49, 24)</td><td>(58, 43)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>harvesters</td><td>(59, 17)</td><td>(124, 14)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>icon</td><td>(41, 17)</td><td>(89, 23)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>italil</td><td>(38, 21)</td><td>(77, 35)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>lastochikino</td><td>(-3, -2)</td><td>(75, -9)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>lugano</td><td>(41, -16)</td><td>(93, -29)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>melons</td><td>(82, 11)</td><td>(179, 13)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>monastery</td><td>(-3, 2)</td><td>(3, 2)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>self_portrait</td><td>(79, 29)</td><td>(176, 37)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>siren</td><td>(49, -6)</td><td>(96, -25)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>three_generations</td><td>(52, 14)</td><td>(111, 11)</td><td>(0, 0, 0, 0)</td></tr>
+<tr><td>tobolsk</td><td>(3, 3)</td><td>(6, 3)</td><td>(0, 0, 0, 0)</td></tr>
+</table>
+  <div class='gallery'>
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/cathedral_color.jpg" alt="cathedral color result">
+            <figcaption>cathedral&nbsp;—&nbsp;G (5, 2), R (12, 3)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/church_color.jpg" alt="church color result">
+            <figcaption>church&nbsp;—&nbsp;G (25, 4), R (58, -4)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/emir_color.jpg" alt="emir color result">
+            <figcaption>emir&nbsp;—&nbsp;G (49, 24), R (58, 43)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/harvesters_color.jpg" alt="harvesters color result">
+            <figcaption>harvesters&nbsp;—&nbsp;G (59, 17), R (124, 14)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/icon_color.jpg" alt="icon color result">
+            <figcaption>icon&nbsp;—&nbsp;G (41, 17), R (89, 23)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/italil_color.jpg" alt="italil color result">
+            <figcaption>italil&nbsp;—&nbsp;G (38, 21), R (77, 35)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/lastochikino_color.jpg" alt="lastochikino color result">
+            <figcaption>lastochikino&nbsp;—&nbsp;G (-3, -2), R (75, -9)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/lugano_color.jpg" alt="lugano color result">
+            <figcaption>lugano&nbsp;—&nbsp;G (41, -16), R (93, -29)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/melons_color.jpg" alt="melons color result">
+            <figcaption>melons&nbsp;—&nbsp;G (82, 11), R (179, 13)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/monastery_color.jpg" alt="monastery color result">
+            <figcaption>monastery&nbsp;—&nbsp;G (-3, 2), R (3, 2)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/self_portrait_color.jpg" alt="self_portrait color result">
+            <figcaption>self_portrait&nbsp;—&nbsp;G (79, 29), R (176, 37)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/siren_color.jpg" alt="siren color result">
+            <figcaption>siren&nbsp;—&nbsp;G (49, -6), R (96, -25)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/three_generations_color.jpg" alt="three_generations color result">
+            <figcaption>three_generations&nbsp;—&nbsp;G (52, 14), R (111, 11)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180intenncc_nopost/tobolsk_color.jpg" alt="tobolsk color result">
+            <figcaption>tobolsk&nbsp;—&nbsp;G (3, 3), R (6, 3)</figcaption>
+          </figure>
+        
+</div>
+</section>
+
+    
+<section class="project-card">
+  <h2>“Best” results — Grad + NCC <em>with</em> post‑processing</h2>
+  <p>Auto‑crop removes color fringing at panel seams; white balance neutralizes casts; contrast stretch expands dynamic range; the gentle 3×3 color mix reduces residual filter mismatch. These look closest to the professionally restored LoC versions.</p>
+  <table class='striped'>
+<tr><th>Image</th><th>G offset (dy,dx)</th><th>R offset (dy,dx)</th><th>Cropped (t,b,l,r)</th></tr>
+<tr><td>cathedral</td><td>(5, 2)</td><td>(12, 3)</td><td>(49, 24, 26, 28)</td></tr>
+<tr><td>church</td><td>(25, 4)</td><td>(58, -4)</td><td>(258, 281, 294, 303)</td></tr>
+<tr><td>emir</td><td>(49, 24)</td><td>(107, 40)</td><td>(259, 296, 310, 280)</td></tr>
+<tr><td>harvesters</td><td>(60, 18)</td><td>(124, 14)</td><td>(495, 285, 349, 284)</td></tr>
+<tr><td>icon</td><td>(42, 17)</td><td>(90, 23)</td><td>(295, 491, 401, 309)</td></tr>
+<tr><td>italil</td><td>(38, 22)</td><td>(77, 36)</td><td>(263, 266, 298, 372)</td></tr>
+<tr><td>lastochikino</td><td>(-3, -2)</td><td>(76, -8)</td><td>(320, 258, 353, 284)</td></tr>
+<tr><td>lugano</td><td>(41, -17)</td><td>(92, -29)</td><td>(375, 298, 278, 267)</td></tr>
+<tr><td>melons</td><td>(80, 10)</td><td>(177, 13)</td><td>(266, 291, 266, 324)</td></tr>
+<tr><td>monastery</td><td>(-3, 2)</td><td>(3, 2)</td><td>(44, 20, 27, 29)</td></tr>
+<tr><td>self_portrait</td><td>(78, 29)</td><td>(175, 37)</td><td>(446, 327, 399, 276)</td></tr>
+<tr><td>siren</td><td>(49, -6)</td><td>(96, -24)</td><td>(340, 317, 330, 427)</td></tr>
+<tr><td>three_generations</td><td>(53, 12)</td><td>(111, 9)</td><td>(242, 227, 265, 294)</td></tr>
+<tr><td>tobolsk</td><td>(3, 3)</td><td>(6, 3)</td><td>(128, 22, 31, 28)</td></tr>
+</table>
+  <div class='gallery'>
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/cathedral_color.jpg" alt="cathedral color result">
+            <figcaption>cathedral&nbsp;—&nbsp;G (5, 2), R (12, 3)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/church_color.jpg" alt="church color result">
+            <figcaption>church&nbsp;—&nbsp;G (25, 4), R (58, -4)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/emir_color.jpg" alt="emir color result">
+            <figcaption>emir&nbsp;—&nbsp;G (49, 24), R (107, 40)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/harvesters_color.jpg" alt="harvesters color result">
+            <figcaption>harvesters&nbsp;—&nbsp;G (60, 18), R (124, 14)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/icon_color.jpg" alt="icon color result">
+            <figcaption>icon&nbsp;—&nbsp;G (42, 17), R (90, 23)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/italil_color.jpg" alt="italil color result">
+            <figcaption>italil&nbsp;—&nbsp;G (38, 22), R (77, 36)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/lastochikino_color.jpg" alt="lastochikino color result">
+            <figcaption>lastochikino&nbsp;—&nbsp;G (-3, -2), R (76, -8)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/lugano_color.jpg" alt="lugano color result">
+            <figcaption>lugano&nbsp;—&nbsp;G (41, -17), R (92, -29)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/melons_color.jpg" alt="melons color result">
+            <figcaption>melons&nbsp;—&nbsp;G (80, 10), R (177, 13)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/monastery_color.jpg" alt="monastery color result">
+            <figcaption>monastery&nbsp;—&nbsp;G (-3, 2), R (3, 2)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/self_portrait_color.jpg" alt="self_portrait color result">
+            <figcaption>self_portrait&nbsp;—&nbsp;G (78, 29), R (175, 37)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/siren_color.jpg" alt="siren color result">
+            <figcaption>siren&nbsp;—&nbsp;G (49, -6), R (96, -24)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/three_generations_color.jpg" alt="three_generations color result">
+            <figcaption>three_generations&nbsp;—&nbsp;G (53, 12), R (111, 9)</figcaption>
+          </figure>
+        
+
+          <figure class="img-shadow">
+            <img class="responsive-img" src="assets/search180gradncc_post/tobolsk_color.jpg" alt="tobolsk color result">
+            <figcaption>tobolsk&nbsp;—&nbsp;G (3, 3), R (6, 3)</figcaption>
+          </figure>
+        
+</div>
+</section>
+
+
+    <div class="footer">© jobsstroustrup — CS180 Project 1</div>
+  </main>
+</body>
+</html>
